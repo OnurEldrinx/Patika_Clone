@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 
 public class User {
 
@@ -25,9 +27,9 @@ public class User {
         this.userType = userType;
     }
 
-    public static boolean isUsernameTaken(String username){
+    public static User isUsernameTaken(String username){
 
-        boolean result = false;
+        User result = null;
 
         String query = "select * from user where username = ?";
 
@@ -38,8 +40,13 @@ public class User {
 
             if (rs.next()){
 
-                result = true;
-
+                User u = new User();
+                u.setId(rs.getInt("id"));
+                u.setFullName(rs.getString("name"));
+                u.setUsername(rs.getString("username"));
+                u.setPassword(rs.getString("password"));
+                u.setUserType(rs.getString("user_type"));
+                result = u;
             }
 
         } catch (SQLException e) {
@@ -59,7 +66,7 @@ public class User {
 
         try {
 
-            if(!isUsernameTaken(username)){
+            if(isUsernameTaken(username) == null){
 
                 PreparedStatement statement = DBConnector.getInstance().prepareStatement(query);
 
@@ -102,6 +109,91 @@ public class User {
 
 
         return result;
+
+    }
+
+    public static boolean updateUser(int id,String fullName,String username,String password,String userType){
+
+        boolean result = true;
+        String query = "update user set name = ?,username = ?,password = ?,user_type = ? where id = ?";
+
+        if (isUsernameTaken(username) != null && isUsernameTaken(username).getId() != id){
+
+            JOptionPane.showMessageDialog(null,"Username is taken.","Error",JOptionPane.ERROR_MESSAGE);
+            result = false;
+
+        }else {
+
+            try {
+
+                PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+                ps.setString(1, fullName);
+                ps.setString(2, username);
+                ps.setString(3, password);
+                ps.setString(4, userType);
+                ps.setInt(5, id);
+                result = ps.executeUpdate() != 0;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+
+
+        return result;
+    }
+
+    public static ArrayList<User> searchUserList(String query){
+
+        ArrayList<User> userList = new ArrayList<>();
+
+        User temp;
+
+        try {
+
+            Statement statement = DBConnector.getInstance().createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()){
+
+                temp = new User();
+                temp.setId(rs.getInt("id"));
+                temp.setFullName(rs.getString("name"));
+                temp.setUsername(rs.getString("username"));
+                temp.setPassword(rs.getString("password"));
+                temp.setUserType(rs.getString("user_type"));
+                userList.add(temp);
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(query);
+
+        return userList;
+
+
+    }
+
+    public static String createQueryForSearch(String name,String username,String userType){
+
+        String query = "SELECT * FROM user WHERE name LIKE '%{{name}}%' AND username LIKE '%{{username}}%'";
+
+        query = query.replace("{{name}}",name);
+        query = query.replace("{{username}}",username);
+
+        if (!userType.isEmpty() && !userType.equals("Choose a type...")){
+
+            query += " AND user_type LIKE '{{userType}}'";
+            query = query.replace("{{userType}}",userType);
+
+        }
+
+        return query;
 
     }
 
