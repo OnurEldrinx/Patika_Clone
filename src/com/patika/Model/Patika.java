@@ -65,7 +65,69 @@ public class Patika {
     }
 
 
+    public static boolean updatePatika(int targetID,String newName){
 
+        boolean r = true;
+
+        String query = "UPDATE patika SET name = ? WHERE id = ?";
+
+        try {
+
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setInt(2,targetID);
+            ps.setString(1,newName);
+            r = (ps.executeUpdate() != -1);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return r;
+    }
+
+    public static boolean deletePatika(int id){
+
+        String query = "DELETE FROM patika WHERE id = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setInt(1,id);
+            return ps.executeUpdate() != -1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return true;
+
+    }
+
+    public static Patika getPatikaByID(int id){
+
+        Patika result = null;
+
+        String query = "SELECT * FROM patika WHERE id = ?";
+        try {
+
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setInt(1,id);
+            ResultSet resultSet = ps.executeQuery();
+            if (resultSet.next()){
+
+                result = new Patika();
+                result.setId(resultSet.getInt("id"));
+                result.setName(resultSet.getString("name"));
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return result;
+    }
 
     public int getId() {
         return id;

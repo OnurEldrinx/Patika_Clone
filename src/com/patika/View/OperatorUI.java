@@ -10,8 +10,7 @@ import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -103,6 +102,38 @@ public class OperatorUI extends JFrame{
         JMenuItem deleteMenu = new JMenuItem("Delete");
         patikaMenu.add(updateMenu);
         patikaMenu.add(deleteMenu);
+
+        updateMenu.addActionListener(e -> {
+
+            int selectedId = Integer.parseInt(patikaListTable.getValueAt(patikaListTable.getSelectedRow(),0).toString());
+            UpdatePatikaGUI updatePatikaGUI = new UpdatePatikaGUI(Patika.getPatikaByID(selectedId));
+
+            updatePatikaGUI.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    loadPatikaTable();
+                }
+            });
+
+        });
+
+
+        deleteMenu.addActionListener(e -> {
+
+            int selectedId = Integer.parseInt(patikaListTable.getValueAt(patikaListTable.getSelectedRow(),0).toString());
+            if(Patika.deletePatika(selectedId)){
+
+                loadPatikaTable();
+                JOptionPane.showMessageDialog(null,"Patika is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
+
+            }else{
+
+                JOptionPane.showMessageDialog(null,"Operation is not completed.","Patika Update",JOptionPane.ERROR_MESSAGE);
+
+            }
+
+
+        });
 
         patikaListTableModel = new DefaultTableModel();
         Object[] patikaListTableColumns = {"ID","NAME"};
@@ -274,7 +305,7 @@ public class OperatorUI extends JFrame{
         });
     }
 
-    private void loadPatikaTable() {
+    public void loadPatikaTable() {
 
         DefaultTableModel clearModel = (DefaultTableModel) patikaListTable.getModel();
         clearModel.setRowCount(0);
