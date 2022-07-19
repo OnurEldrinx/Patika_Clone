@@ -3,13 +3,15 @@ package com.patika.View;
 import com.patika.Helpers.DataManager;
 import com.patika.Helpers.Helper;
 import com.patika.Model.Operator;
+import com.patika.Model.Patika;
 import com.patika.Model.User;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -38,8 +40,19 @@ public class OperatorUI extends JFrame{
     private JTextField searchByUsernameInput;
     private JComboBox searchByUserTypeComboBox;
     private JButton searchButton;
+    private JPanel patikaPanel;
+    private JScrollPane patikaListScroll;
+    private JTable patikaListTable;
+    private JPanel addPatikaPanel;
+    private JTextField patikaNameInput;
+    private JButton addPatikaButton;
     private DefaultTableModel userListTableModel;
     private Object[] tempRow;
+
+    private DefaultTableModel patikaListTableModel;
+    private Object[] tempPatikaRow;
+
+    private JPopupMenu patikaMenu;
 
     public OperatorUI(Operator operator) {
 
@@ -58,6 +71,7 @@ public class OperatorUI extends JFrame{
 
         //Table Operations
 
+        // User Table
         userListTableModel = new DefaultTableModel(){
 
             @Override
@@ -76,11 +90,43 @@ public class OperatorUI extends JFrame{
         userListTableModel.setColumnIdentifiers(userListTableColumns);
 
         tempRow = new Object[userListTableColumns.length];
-        refreshTable();
 
         userListTable.setModel(userListTableModel);
         userListTable.getTableHeader().setReorderingAllowed(false);
+        loadUserTable();
 
+
+        // Patika Table
+
+        patikaMenu = new JPopupMenu();
+        JMenuItem updateMenu = new JMenuItem("Update");
+        JMenuItem deleteMenu = new JMenuItem("Delete");
+        patikaMenu.add(updateMenu);
+        patikaMenu.add(deleteMenu);
+
+        patikaListTableModel = new DefaultTableModel();
+        Object[] patikaListTableColumns = {"ID","NAME"};
+        patikaListTableModel.setColumnIdentifiers(patikaListTableColumns);
+
+        tempPatikaRow = new Object[patikaListTableColumns.length];
+
+
+
+        patikaListTable.setModel(patikaListTableModel);
+        patikaListTable.setComponentPopupMenu(patikaMenu);
+        patikaListTable.getTableHeader().setReorderingAllowed(false);
+        patikaListTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        loadPatikaTable();
+
+        patikaListTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Point point = e.getPoint();
+                int selectedRow = patikaListTable.rowAtPoint(point);
+                patikaListTable.setRowSelectionInterval(selectedRow,selectedRow);
+
+            }
+        });
 
 
         userListTable.getModel().addTableModelListener(e ->{
@@ -96,12 +142,12 @@ public class OperatorUI extends JFrame{
                 if(User.updateUser(userID,fullName,username,password,usertype)){
 
                     JOptionPane.showMessageDialog(null,"User is updated successfully.","User Update",JOptionPane.INFORMATION_MESSAGE);
-                    refreshTable();
+                    loadUserTable();
 
                 }else{
 
                     JOptionPane.showMessageDialog(null,"Operation is not completed.","User Update",JOptionPane.ERROR_MESSAGE);
-                    refreshTable();
+                    loadUserTable();
                 }
 
             }
@@ -111,129 +157,138 @@ public class OperatorUI extends JFrame{
         });
 
 
-        addUserButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        addUserButton.addActionListener(e -> {
 
-                if(fullNameInputForm.getText().isEmpty() || usernameInputForm.getText().isEmpty() || passwordInputForm.getPassword().length == 0){
+            if(fullNameInputForm.getText().isEmpty() || usernameInputForm.getText().isEmpty() || passwordInputForm.getPassword().length == 0){
 
-                    JOptionPane.showMessageDialog(null,"Please fill all fields.","Error",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Please fill all fields.","Error",JOptionPane.ERROR_MESSAGE);
 
-                }else{
+            }else{
 
-                   if(User.addUser(fullNameInputForm.getText(),usernameInputForm.getText(), String.valueOf(passwordInputForm.getPassword()), Objects.requireNonNull(usertypesComboBox.getSelectedItem()).toString())){
+               if(User.addUser(fullNameInputForm.getText(),usernameInputForm.getText(), String.valueOf(passwordInputForm.getPassword()), Objects.requireNonNull(usertypesComboBox.getSelectedItem()).toString())){
 
-                       JOptionPane.showMessageDialog(null,"User is added successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
-                       fullNameInputForm.setText(null);
-                       usernameInputForm.setText(null);
-                       passwordInputForm.setText(null);
-                       usertypesComboBox.setSelectedIndex(0);
-                       refreshTable();
+                   JOptionPane.showMessageDialog(null,"User is added successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
+                   fullNameInputForm.setText(null);
+                   usernameInputForm.setText(null);
+                   passwordInputForm.setText(null);
+                   usertypesComboBox.setSelectedIndex(0);
+                   loadUserTable();
 
 
-                   }else{
+               }else{
 
-                       JOptionPane.showMessageDialog(null,"Operation is not completed. Error occurred.","Error",JOptionPane.ERROR_MESSAGE);
+                   JOptionPane.showMessageDialog(null,"Operation is not completed. Error occurred.","Error",JOptionPane.ERROR_MESSAGE);
 
-                   }
-
-                }
-
-
+               }
 
             }
+
+
+
         });
 
 
-        deleteUserButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        deleteUserButton.addActionListener(e -> {
 
-                if(userIDInputForm.getText().isEmpty()){
+            if(userIDInputForm.getText().isEmpty()){
 
-                    JOptionPane.showMessageDialog(null,"Please fill all fields.","Error",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Please fill all fields.","Error",JOptionPane.ERROR_MESSAGE);
 
-                }else{
+            }else{
 
-                    int parsedID = 0;
+                int parsedID = 0;
 
-                    if(Helper.isParsable(userIDInputForm.getText().trim())){
+                if(Helper.isParsable(userIDInputForm.getText().trim())){
 
-                        parsedID = Integer.parseInt(userIDInputForm.getText().trim());
-
-                    }
-
-                    if (User.deleteUser(parsedID)){
-
-                        JOptionPane.showMessageDialog(null,"User is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
-                        refreshTable();
-
-                    }else{
-
-                        JOptionPane.showMessageDialog(null,"User is not found.","Error",JOptionPane.ERROR_MESSAGE);
-
-                    }
-
-                    /*if(User.deleteUser(parsedID)){
-
-                        JOptionPane.showMessageDialog(null,"User is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
-                        refreshTable();
-
-                    }else{
-
-                        JOptionPane.showMessageDialog(null,"User is not found.","Error",JOptionPane.ERROR_MESSAGE);
-
-                    }*/
-
-                    userIDInputForm.setText(null);
-
+                    parsedID = Integer.parseInt(userIDInputForm.getText().trim());
 
                 }
 
+                if (User.deleteUser(parsedID)){
+
+                    JOptionPane.showMessageDialog(null,"User is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
+                    loadUserTable();
+
+                }else{
+
+                    JOptionPane.showMessageDialog(null,"User is not found.","Error",JOptionPane.ERROR_MESSAGE);
+
+                }
+
+                userIDInputForm.setText(null);
+
+
             }
+
         });
 
 
 
         this.setVisible(true);
 
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        searchButton.addActionListener(e -> {
 
-                String full_name = searchByNameInput.getText();
-                String user_name = searchByUsernameInput.getText();
-                String user_type = Objects.requireNonNull(searchByUserTypeComboBox.getSelectedItem()).toString();
+            String full_name = searchByNameInput.getText();
+            String user_name = searchByUsernameInput.getText();
+            String user_type = Objects.requireNonNull(searchByUserTypeComboBox.getSelectedItem()).toString();
 
-                if(user_type.equals("Choose a type...")){
+            if(user_type.equals("Choose a type...")){
 
-                    user_type = "";
-
-                }
-
-                String query = User.createQueryForSearch(full_name,user_name,user_type);
-                ArrayList<User> searchResult = User.searchUserList(query);
-                refreshTable(searchResult);
-
-                searchByNameInput.setText(null);
-                searchByUsernameInput.setText(null);
-                searchByUserTypeComboBox.setSelectedIndex(0);
+                user_type = "";
 
             }
+
+            String query = User.createQueryForSearch(full_name,user_name,user_type);
+            ArrayList<User> searchResult = User.searchUserList(query);
+            loadUserTable(searchResult);
+
+            searchByNameInput.setText(null);
+            searchByUsernameInput.setText(null);
+            searchByUserTypeComboBox.setSelectedIndex(0);
+
         });
 
 
-        logOutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        logOutButton.addActionListener(e -> dispose());
 
-                dispose();
+
+        addPatikaButton.addActionListener(e -> {
+
+            if(patikaNameInput.getText().isEmpty()){
+
+                JOptionPane.showMessageDialog(null,"Please fill all fields.","Error",JOptionPane.ERROR_MESSAGE);
+
+
+            }else{
+
+                if(Patika.addPatika(patikaNameInput.getText())){
+
+                    JOptionPane.showMessageDialog(null,"Patika is added successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
+                    loadPatikaTable();
+                    patikaNameInput.setText(null);
+                }
 
             }
+
+
         });
     }
 
-    public void refreshTable(){
+    private void loadPatikaTable() {
+
+        DefaultTableModel clearModel = (DefaultTableModel) patikaListTable.getModel();
+        clearModel.setRowCount(0);
+
+        for (Patika temp:Patika.getPatikaList()){
+
+            tempPatikaRow[0] = temp.getId();
+            tempPatikaRow[1] = temp.getName();
+            patikaListTableModel.addRow(tempPatikaRow);
+        }
+
+    }
+
+    public void loadUserTable(){
 
         DefaultTableModel clearModel = (DefaultTableModel) userListTable.getModel();
         clearModel.setRowCount(0);
@@ -253,7 +308,7 @@ public class OperatorUI extends JFrame{
 
     }
 
-    public void refreshTable(ArrayList<User> userList){
+    public void loadUserTable(ArrayList<User> userList){
 
         DefaultTableModel clearModel = (DefaultTableModel) userListTable.getModel();
         clearModel.setRowCount(0);
