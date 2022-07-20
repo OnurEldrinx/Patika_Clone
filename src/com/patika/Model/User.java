@@ -57,6 +57,67 @@ public class User {
 
     }
 
+    public static User getUser(int id){
+
+        User result = null;
+
+        String query = "select * from user where id = ?";
+
+        try {
+            PreparedStatement statement = DBConnector.getInstance().prepareStatement(query);
+            statement.setInt(1,id);
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()){
+
+                User u = new User();
+                u.setId(rs.getInt("id"));
+                u.setFullName(rs.getString("name"));
+                u.setUsername(rs.getString("username"));
+                u.setPassword(rs.getString("password"));
+                u.setUserType(rs.getString("user_type"));
+                result = u;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+
+    }
+
+    public static User getUser(String username,String password){
+
+        User result = null;
+
+        String query = "select * from user where username = ? and password = ?";
+
+        try {
+            PreparedStatement statement = DBConnector.getInstance().prepareStatement(query);
+            statement.setString(1,username);
+            statement.setString(2,password);
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()){
+
+                User u = new User();
+                u.setId(rs.getInt("id"));
+                u.setFullName(rs.getString("name"));
+                u.setUsername(rs.getString("username"));
+                u.setPassword(rs.getString("password"));
+                u.setUserType(rs.getString("user_type"));
+                result = u;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+
+    }
+
 
     public static boolean addUser(String fullName,String username,String password,String userType){
 
@@ -101,7 +162,7 @@ public class User {
 
             PreparedStatement pr = DBConnector.getInstance().prepareStatement(query);
             pr.setInt(1,id);
-            result = pr.executeUpdate() != 0;
+            result = pr.executeUpdate() != -1;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -132,7 +193,7 @@ public class User {
                 ps.setString(3, password);
                 ps.setString(4, userType);
                 ps.setInt(5, id);
-                result = ps.executeUpdate() != 0;
+                result = ps.executeUpdate() != -1;
 
             } catch (SQLException e) {
                 e.printStackTrace();

@@ -2,6 +2,8 @@ package com.patika.View;
 
 import com.patika.Helpers.DataManager;
 import com.patika.Helpers.Helper;
+import com.patika.Helpers.Item;
+import com.patika.Model.Course;
 import com.patika.Model.Operator;
 import com.patika.Model.Patika;
 import com.patika.Model.User;
@@ -45,6 +47,15 @@ public class OperatorUI extends JFrame{
     private JPanel addPatikaPanel;
     private JTextField patikaNameInput;
     private JButton addPatikaButton;
+    private JPanel coursePanel;
+    private JScrollPane courseListScroll;
+    private JTable courseListTable;
+    private JPanel addCoursePanel;
+    private JTextField courseNameInput;
+    private JTextField languageInput;
+    private JComboBox coursePatikaComboBox;
+    private JComboBox courseEducatorComboBox;
+    private JButton addCourseButton;
     private DefaultTableModel userListTableModel;
     private Object[] tempRow;
 
@@ -52,6 +63,9 @@ public class OperatorUI extends JFrame{
     private Object[] tempPatikaRow;
 
     private JPopupMenu patikaMenu;
+
+    private DefaultTableModel courseListTableModel;
+    private Object[] tempCourseRow;
 
     public OperatorUI(Operator operator) {
 
@@ -93,7 +107,7 @@ public class OperatorUI extends JFrame{
         userListTable.setModel(userListTableModel);
         userListTable.getTableHeader().setReorderingAllowed(false);
         loadUserTable();
-
+        //
 
         // Patika Table
 
@@ -112,6 +126,7 @@ public class OperatorUI extends JFrame{
                 @Override
                 public void windowClosed(WindowEvent e) {
                     loadPatikaTable();
+                    loadCourseTable();
                 }
             });
 
@@ -124,6 +139,7 @@ public class OperatorUI extends JFrame{
             if(Patika.deletePatika(selectedId)){
 
                 loadPatikaTable();
+                loadCourseTable();
                 JOptionPane.showMessageDialog(null,"Patika is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
 
             }else{
@@ -148,6 +164,23 @@ public class OperatorUI extends JFrame{
         patikaListTable.getTableHeader().setReorderingAllowed(false);
         patikaListTable.getColumnModel().getColumn(0).setMaxWidth(50);
         loadPatikaTable();
+        //
+
+        // Courses Table
+        courseListTableModel = new DefaultTableModel();
+        Object[] courseListTableColumns = {"ID", "NAME", "PROGRAMMING LANGUAGE", "PATIKA", "EDUCATOR"};
+        courseListTableModel.setColumnIdentifiers(courseListTableColumns);
+        tempCourseRow = new Object[courseListTableColumns.length];
+
+        courseListTable.setModel(courseListTableModel);
+        courseListTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        courseListTable.getTableHeader().setReorderingAllowed(false);
+
+        loadCourseTable();
+        //
+
+
+
 
         patikaListTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -239,6 +272,7 @@ public class OperatorUI extends JFrame{
 
                     JOptionPane.showMessageDialog(null,"User is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
                     loadUserTable();
+                    loadCourseTable();
 
                 }else{
 
@@ -303,6 +337,103 @@ public class OperatorUI extends JFrame{
 
 
         });
+
+
+        addCourseButton.addActionListener(e -> {
+
+            Item patikaItem = (Item) coursePatikaComboBox.getSelectedItem();
+            Item userItem = (Item) courseEducatorComboBox.getSelectedItem();
+
+            if(courseNameInput.getText().isEmpty() || languageInput.getText().isEmpty()){
+
+                JOptionPane.showMessageDialog(null,"Please fill all fields.","Error",JOptionPane.ERROR_MESSAGE);
+
+            }else{
+
+                assert userItem != null;
+                assert patikaItem != null;
+                if(Course.addCourse(userItem.getId(),patikaItem.getId(),courseNameInput.getText(),languageInput.getText())){
+
+                    JOptionPane.showMessageDialog(null,"Course is added successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
+                    loadCourseTable();
+
+                }else{
+
+                    JOptionPane.showMessageDialog(null,"Operation is not completed. Error occurred.","Error",JOptionPane.ERROR_MESSAGE);
+
+                }
+
+            }
+
+        });
+
+
+    }
+
+    private void loadCourseTable() {
+
+        DefaultTableModel clearModel = (DefaultTableModel) courseListTable.getModel();
+        clearModel.setRowCount(0);
+
+        for (Course temp:Course.getCourseList()){
+
+            tempCourseRow[0] = temp.getId();
+            tempCourseRow[1] = temp.getName();
+            tempCourseRow[2] = temp.getLanguage();
+            if(temp.getPatika() !=null){
+
+                tempCourseRow[3] = temp.getPatika().getName();
+
+            }else{
+
+                tempCourseRow[3] = "Unknown";
+
+            }
+
+            if(temp.getEducator() !=null){
+
+                tempCourseRow[4] = temp.getEducator().getFullName();
+            }else{
+
+                tempCourseRow[4] = "Unknown";
+
+            }
+
+            courseListTableModel.addRow(tempCourseRow);
+
+        }
+
+        loadEducatorComboBox();
+        loadPatikaComboBox();
+
+    }
+
+    public void loadPatikaComboBox(){
+
+        coursePatikaComboBox.removeAllItems();
+        for (Patika patika:Patika.getPatikaList()){
+
+            coursePatikaComboBox.addItem(new Item(patika.getId(),patika.getName()));
+
+        }
+
+
+    }
+
+    public void loadEducatorComboBox(){
+
+        courseEducatorComboBox.removeAllItems();
+        for(User user:DataManager.getUserList()){
+
+            if(user.getUserType().equals("educator")){
+
+                courseEducatorComboBox.addItem(new Item(user.getId(),user.getFullName()));
+
+            }
+
+        }
+
+
     }
 
     public void loadPatikaTable() {
@@ -315,7 +446,11 @@ public class OperatorUI extends JFrame{
             tempPatikaRow[0] = temp.getId();
             tempPatikaRow[1] = temp.getName();
             patikaListTableModel.addRow(tempPatikaRow);
+
         }
+
+        loadPatikaComboBox();
+        loadEducatorComboBox();
 
     }
 
@@ -337,6 +472,10 @@ public class OperatorUI extends JFrame{
 
         }
 
+        loadEducatorComboBox();
+        loadPatikaComboBox();
+
+
     }
 
     public void loadUserTable(ArrayList<User> userList){
@@ -356,6 +495,9 @@ public class OperatorUI extends JFrame{
             userListTableModel.addRow(tempRow);
 
         }
+
+        loadEducatorComboBox();
+        loadPatikaComboBox();
 
     }
 
