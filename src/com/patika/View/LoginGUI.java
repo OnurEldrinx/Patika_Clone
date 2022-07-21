@@ -85,11 +85,6 @@ public class LoginGUI extends JFrame {
         });
     }
 
-    public static void main(String[] args) {
 
-        Helper.setLayout("Nimbus");
-        LoginGUI loginGUI = new LoginGUI();
-
-    }
 
 }

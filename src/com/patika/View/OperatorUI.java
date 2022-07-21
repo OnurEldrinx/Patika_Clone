@@ -314,7 +314,11 @@ public class OperatorUI extends JFrame{
         });
 
 
-        logOutButton.addActionListener(e -> dispose());
+        logOutButton.addActionListener(e -> {
+            dispose();
+            LoginGUI loginGUI = new LoginGUI();
+        }
+        );
 
 
         addPatikaButton.addActionListener(e -> {

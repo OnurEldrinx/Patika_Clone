@@ -57,6 +57,34 @@ public class Course {
         return list;
     }
 
+    public static ArrayList<Course> getCourseList(Educator thisEducator){
+
+        ArrayList<Course> list = new ArrayList<>();
+
+        Course temp;
+
+        try {
+
+            String query = "select * from course where user_id = ?";
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setInt(1,thisEducator.getId());
+            ResultSet resultSet = ps.executeQuery();
+
+            while (resultSet.next()){
+
+                temp = new Course(resultSet.getInt("id"),resultSet.getInt("user_id"),resultSet.getInt("patika_id"),resultSet.getString("name"),resultSet.getString("language"));
+                list.add(temp);
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return list;
+    }
+
     public static boolean addCourse(int user_id,int patika_id,String name,String language){
 
         String query = "INSERT INTO course(user_id,patika_id,name,language) VALUES(?,?,?,?)";
@@ -133,5 +161,10 @@ public class Course {
 
     public void setEducator(User educator) {
         this.educator = educator;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
