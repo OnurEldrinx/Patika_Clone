@@ -10,7 +10,7 @@ public class UpdatePatikaGUI extends JFrame{
     private JPanel wrapper;
     private JTextField patikaUpdateInput;
     private JButton updateButton;
-    private Patika patika;
+    private final Patika patika;
 
     public UpdatePatikaGUI(Patika patika){
 
@@ -48,4 +48,7 @@ public class UpdatePatikaGUI extends JFrame{
 
     }
 
+    public Patika getPatika() {
+        return patika;
+    }
 }

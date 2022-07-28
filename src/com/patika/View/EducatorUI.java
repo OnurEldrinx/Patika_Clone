@@ -6,9 +6,10 @@ import com.patika.Model.Educator;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Objects;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class EducatorUI extends JFrame{
     private JPanel wrapper;
@@ -24,7 +25,7 @@ public class EducatorUI extends JFrame{
     private JButton addContentButton;
     private JButton showContentButton;
     private JPanel contentOperationsPanel;
-    private JTextField textField1;
+    private JTextField searchTitleInput;
     private JButton searchContentButton;
 
     private DefaultTableModel coursesTableModel;
@@ -88,7 +89,7 @@ public class EducatorUI extends JFrame{
             }
         };
 
-        Object[] contentTableColumns = {"ID","TITLE","INFO","YOUTUBE LINK","COURSE",""};
+        Object[] contentTableColumns = {"ID","TITLE","INFO","YOUTUBE LINK","COURSE"};
         contentTableModel.setColumnIdentifiers(contentTableColumns);
         contentsTable.getTableHeader().setReorderingAllowed(false);
         contentsTable.setModel(contentTableModel);
@@ -97,7 +98,7 @@ public class EducatorUI extends JFrame{
 
 
 
-        loadContentsTable((Course) Objects.requireNonNull(coursesComboBox.getSelectedItem()));
+        //loadContentsTable((Course) Objects.requireNonNull(coursesComboBox.getSelectedItem()));
 
 
         // LOG OUT
@@ -113,9 +114,55 @@ public class EducatorUI extends JFrame{
         //  ADD CONTENT
         addContentButton.addActionListener(e -> {
 
+            Course selected = (Course)coursesComboBox.getSelectedItem();
+
+            AddContentGUI addContentGUI = new AddContentGUI(selected);
+
+            addContentGUI.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    loadContentsTable(selected);
+                }
+            });
 
 
         });
+        showContentButton.addActionListener(e -> {
+
+            Course selected = (Course)coursesComboBox.getSelectedItem();
+            assert selected != null;
+            loadContentsTable(selected);
+
+        });
+
+        searchContentButton.addActionListener(e -> {
+
+            String s = searchTitleInput.getText().trim().toLowerCase();
+
+            loadContentsTable(CourseContent.search(s));
+
+
+        });
+    }
+
+
+    private void loadContentsTable(ArrayList<CourseContent> list){
+
+        DefaultTableModel clearModel = (DefaultTableModel) contentsTable.getModel();
+        clearModel.setRowCount(0);
+
+        for (CourseContent temp:list){
+
+            tempContentRow[0] = temp.getId();
+            tempContentRow[1] = temp.getTitle();
+            tempContentRow[2] = temp.getInfo();
+            tempContentRow[3] = temp.getYoutubeLink();
+            tempContentRow[4] = Course.fetchCourse(temp.getCourseId()).getName();
+
+            contentTableModel.addRow(tempContentRow);
+
+        }
+
     }
 
     private void loadContentsTable(Course course) {
@@ -125,16 +172,16 @@ public class EducatorUI extends JFrame{
 
         for (CourseContent temp:CourseContent.getContent(course.getId())){
 
-            tempCourseRow[0] = temp.getId();
-            tempCourseRow[1] = temp.getTitle();
-            tempCourseRow[2] = temp.getInfo();
-            tempCourseRow[3] = temp.getYoutubeLink();
+            tempContentRow[0] = temp.getId();
+            tempContentRow[1] = temp.getTitle();
+            tempContentRow[2] = temp.getInfo();
+            tempContentRow[3] = temp.getYoutubeLink();
             if(course.getId() == temp.getCourseId()){
 
-                tempCourseRow[4] = course.getName();
+                tempContentRow[4] = course.getName();
 
             }
-            contentTableModel.addRow(tempCourseRow);
+            contentTableModel.addRow(tempContentRow);
 
         }
 

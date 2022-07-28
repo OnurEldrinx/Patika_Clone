@@ -31,6 +31,30 @@ public class Course {
         this.educator = User.getUser(user_id);
     }
 
+
+    public static Course fetchCourse(int id){
+
+        Course course = null;
+
+        String query = "SELECT * FROM course WHERE id = ?";
+        try {
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setInt(1,id);
+            ResultSet resultSet = ps.executeQuery();
+
+            if (resultSet.next()){
+
+                course = new Course(resultSet.getInt("id"),resultSet.getInt("user_id"),resultSet.getInt("patika_id"),resultSet.getString("name"),resultSet.getString("language"));
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return course;
+    }
+
     public static ArrayList<Course> getCourseList(){
 
         ArrayList<Course> list = new ArrayList<>();

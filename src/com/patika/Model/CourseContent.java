@@ -14,7 +14,7 @@ public class CourseContent {
     private String info;
     private String youtubeLink;
     private int courseId;
-    private int quizId;
+
 
     public static ArrayList<CourseContent> getContent(int courseId){
 
@@ -37,7 +37,6 @@ public class CourseContent {
                 temp.setTitle(rs.getString("title"));
                 temp.setInfo(rs.getString("info"));
                 temp.setYoutubeLink(rs.getString("youtube_link"));
-                temp.setQuizId(rs.getInt("quizID"));
                 temp.setCourseId(rs.getInt("courseID"));
                 list.add(temp);
 
@@ -50,6 +49,59 @@ public class CourseContent {
 
         return list;
     }
+
+    public static boolean addContent(String title,String info,String link,Course course){
+
+        String query = "INSERT INTO content(title,info,youtube_link,courseID) VALUES(?,?,?,?)";
+        try {
+
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setString(1,title);
+            ps.setString(2,info);
+            ps.setString(3,link);
+            ps.setInt(4,course.getId());
+            return ps.executeUpdate() != -1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return true;
+    }
+
+    public static ArrayList<CourseContent> search(String title){
+
+        ArrayList<CourseContent> list = new ArrayList<>();
+        CourseContent temp;
+
+        String q = "SELECT * FROM content WHERE title LIKE '%{{title}}%'";
+        q = q.replace("{{title}}",title);
+
+        try {
+
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(q);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()){
+
+                temp = new CourseContent();
+                temp.setId(rs.getInt("id"));
+                temp.setTitle(rs.getString("title"));
+                temp.setInfo(rs.getString("info"));
+                temp.setYoutubeLink(rs.getString("youtube_link"));
+                temp.setCourseId(rs.getInt("courseID"));
+                list.add(temp);
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
 
     public int getId() {
         return id;
@@ -81,14 +133,6 @@ public class CourseContent {
 
     public void setYoutubeLink(String youtubeLink) {
         this.youtubeLink = youtubeLink;
-    }
-
-    public int getQuizId() {
-        return quizId;
-    }
-
-    public void setQuizId(int quizId) {
-        this.quizId = quizId;
     }
 
     public int getCourseId() {
