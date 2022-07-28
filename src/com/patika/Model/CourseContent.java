@@ -16,6 +16,27 @@ public class CourseContent {
     private int courseId;
 
 
+    public static boolean updateContent(int id,String title,String info,String link){
+
+       String query = "UPDATE content SET title = ?,info = ?,youtube_link = ? WHERE id = ?";
+        try {
+
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setString(1,title);
+            ps.setString(2,info);
+            ps.setString(3,link);
+            ps.setInt(4,id);
+            return ps.executeUpdate() != -1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return true;
+    }
+
+
     public static ArrayList<CourseContent> getContent(int courseId){
 
         ArrayList<CourseContent> list = new ArrayList<>();
@@ -100,6 +121,23 @@ public class CourseContent {
         }
 
         return list;
+    }
+
+    public static boolean deleteContent(int contentID){
+
+        String query = "DELETE FROM content WHERE id = ?";
+        try {
+            PreparedStatement ps = DBConnector.getInstance().prepareStatement(query);
+            ps.setInt(1,contentID);
+
+            return ps.executeUpdate() != -1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return true;
     }
 
 

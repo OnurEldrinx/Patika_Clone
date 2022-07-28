@@ -1,15 +1,18 @@
 package com.patika.View;
 
-import com.patika.Model.Course;
-import com.patika.Model.CourseContent;
-import com.patika.Model.Educator;
+import com.patika.Model.*;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 
 public class EducatorUI extends JFrame{
     private JPanel wrapper;
@@ -35,6 +38,8 @@ public class EducatorUI extends JFrame{
     private Object[] tempContentRow;
 
     private final Educator educator;
+
+    private JPopupMenu contentTablePopUpMenu;
 
     public EducatorUI(Educator educator){
 
@@ -79,7 +84,7 @@ public class EducatorUI extends JFrame{
             @Override
             public boolean isCellEditable(int row, int column) {
 
-                if(column == 0){
+                if(column == 0 || column == 4){
 
                     return false;
 
@@ -96,6 +101,69 @@ public class EducatorUI extends JFrame{
         tempContentRow = new Object[contentTableColumns.length];
         contentsTable.getColumnModel().getColumn(0).setMaxWidth(50);
 
+        contentTablePopUpMenu = new JPopupMenu();
+
+        contentsTable.setComponentPopupMenu(contentTablePopUpMenu);
+
+
+        JMenuItem deleteMenu = new JMenuItem("Delete");
+        contentTablePopUpMenu.add(deleteMenu);
+
+
+        contentsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Point point = e.getPoint();
+                int selectedRow = contentsTable.rowAtPoint(point);
+                contentsTable.setRowSelectionInterval(selectedRow,selectedRow);
+
+            }
+        });
+
+        deleteMenu.addActionListener(e -> {
+
+            int selectedId = Integer.parseInt(contentsTable.getValueAt(contentsTable.getSelectedRow(),0).toString());
+            if(CourseContent.deleteContent(selectedId)){
+
+                Course selected = (Course)coursesComboBox.getSelectedItem();
+                assert selected != null;
+                loadContentsTable(selected);
+                JOptionPane.showMessageDialog(null,"Content is deleted successfully.","Information",JOptionPane.INFORMATION_MESSAGE);
+
+            }else{
+
+                JOptionPane.showMessageDialog(null,"Operation is not completed.","Patika Update",JOptionPane.ERROR_MESSAGE);
+
+            }
+
+
+        });
+
+        contentsTable.getModel().addTableModelListener(e ->{
+
+            if(e.getType() == TableModelEvent.UPDATE){
+
+                int contentID = Integer.parseInt(contentsTable.getValueAt(contentsTable.getSelectedRow(),0).toString());
+                String title = contentsTable.getValueAt(contentsTable.getSelectedRow(),1).toString();
+                String info  = contentsTable.getValueAt(contentsTable.getSelectedRow(),2).toString();
+                String link  = contentsTable.getValueAt(contentsTable.getSelectedRow(),3).toString();
+
+                if(CourseContent.updateContent(contentID,title,info,link)){
+
+                    JOptionPane.showMessageDialog(null,"Content is updated successfully.","Content Update",JOptionPane.INFORMATION_MESSAGE);
+                    loadContentsTable((Course) Objects.requireNonNull(coursesComboBox.getSelectedItem()));
+
+                }else{
+
+                    JOptionPane.showMessageDialog(null,"Operation is not completed.","Content Update",JOptionPane.ERROR_MESSAGE);
+                    loadContentsTable((Course) Objects.requireNonNull(coursesComboBox.getSelectedItem()));
+                }
+
+            }
+
+
+
+        });
 
 
         //loadContentsTable((Course) Objects.requireNonNull(coursesComboBox.getSelectedItem()));
