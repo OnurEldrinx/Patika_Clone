@@ -55,6 +55,8 @@ public class Course {
         return course;
     }
 
+
+
     public static ArrayList<Course> getCourseList(){
 
         ArrayList<Course> list = new ArrayList<>();
@@ -65,6 +67,35 @@ public class Course {
 
             Statement statement = DBConnector.getInstance().createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM course");
+
+            while (resultSet.next()){
+
+                temp = new Course(resultSet.getInt("id"),resultSet.getInt("user_id"),resultSet.getInt("patika_id"),resultSet.getString("name"),resultSet.getString("language"));
+                list.add(temp);
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        return list;
+    }
+
+    public static ArrayList<Course> getCourseList(int patika_id){
+
+        ArrayList<Course> list = new ArrayList<>();
+
+        Course temp;
+
+        String query = "SELECT * FROM course WHERE patika_id = ?";
+
+        try {
+
+            PreparedStatement statement = DBConnector.getInstance().prepareStatement(query);
+            statement.setInt(1,patika_id);
+            ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()){
 

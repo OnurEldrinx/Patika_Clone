@@ -13,6 +13,13 @@ public class Patika {
     private int id;
     private String name;
 
+    public Patika(String name) {
+        this.name = name;
+    }
+    public Patika() {
+
+    }
+
 
     public static boolean addPatika(String name){
 
@@ -143,5 +150,10 @@ public class Patika {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
